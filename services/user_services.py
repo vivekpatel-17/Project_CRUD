@@ -16,7 +16,11 @@ def get_all_users(db: Session):
         return None
 def create_user(db: Session, user):
     try:
-        db_user = User(**user.model_dump())
+        db_user = User(
+            username=user.username,
+            email=user.email,
+            hashed_password=user.password
+        )
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
@@ -34,7 +38,7 @@ def update_user(db: Session, id: int, user):
         if db_user:
             db_user.username = user.username
             db_user.email = user.email
-            db_user.password = user.password
+            db_user.hashed_password = user.password
             
             db.commit()
             db.refresh(db_user)
@@ -51,7 +55,8 @@ def delete_user(db: Session, id: int):
         if db_user:
             db.delete(db_user)
             db.commit()
-        return True
+            return True
+        return False
     except Exception as e:
         print(f"Error occurred while fetching user: {e}")
         return False
