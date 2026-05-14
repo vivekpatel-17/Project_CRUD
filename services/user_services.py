@@ -34,6 +34,8 @@ def update_user(db: Session, id: int, user):
         if db_user:
             db_user.username = user.username
             db_user.email = user.email
+            db_user.password = user.password
+            
             db.commit()
             db.refresh(db_user)
             return db_user
