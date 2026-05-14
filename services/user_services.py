@@ -2,11 +2,18 @@ from sqlalchemy.orm import Session
 from models.user_model import User
 
 def get_user_by_id(db: Session, user_id: int):
-    return db.query(User).filter(User.id == user_id).first()
+    try:
+        return db.query(User).filter(User.id == user_id).first()
+    except Exception as e:
+        print(f"Error occurred while fetching user: {e}")
+        return None
 
 def get_all_users(db: Session):
-    return db.query(User).all()
-
+    try:
+        return db.query(User).all()
+    except Exception as e:
+        print(f"Error occurred while fetching users: {e}")
+        return None
 def create_user(db: Session, user):
     try:
         db_user = User(**user.model_dump())
@@ -38,8 +45,11 @@ def update_user(db: Session, id: int, user):
         
 def delete_user(db: Session, id: int):
     db_user = db.query(User).filter(User.id == id).first()
-    if db_user:
-        db.delete(db_user)
-        db.commit()
+    try:
+        if db_user:
+            db.delete(db_user)
+            db.commit()
         return True
-    return False
+    except Exception as e:
+        print(f"Error occurred while fetching user: {e}")
+        return False

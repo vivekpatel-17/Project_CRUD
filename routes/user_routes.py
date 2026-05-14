@@ -9,29 +9,47 @@ router = APIRouter()
 @router.get("/users")
 def get_all_users(db: Session = Depends(get_db)):
     users = user_services.get_all_users(db)  
-    return api_response(
-        status_code=200,
-        message="Users fetched successfully",
-        data=users,
-        success=True
-    )
+    try:
+        return api_response(
+            status_code=200,
+            message="Users fetched successfully",
+            data=users,
+            success=True
+        )
+    except Exception as e:
+        print(f"Error occurred while fetching users: {e}")
+        return api_response(
+            status_code=500,
+            message="unexpected error happened",
+            data= None,
+            success= False
+        )
 
 @router.get("/user/{id}")
 def get_user_by_id(id: int ,db: Session = Depends(get_db)):
     user = user_services.get_user_by_id(db, id)
-    if user:
+    try:
+        if user:
+            return api_response(
+                status_code=200,
+                message="User fetched successfully",
+                data=user,
+                success=True
+            )
+        else:
+            return api_response(
+                status_code=404,
+                message="User not found",
+                data=None,
+                success=False
+            )  
+    except Exception as e:
+        print(f"Error occurred while fetching user: {e}")
         return api_response(
-            status_code=200,
-            message="User fetched successfully",
-            data=user,
-            success=True
-        )
-    else:
-        return api_response(
-            status_code=404,
-            message="User not found",
-            data=None,
-            success=False
+            status_code=500,
+            message="unexpected error happened",
+            data= None,
+            success= False
         )
 
 @router.post("/user")
@@ -76,17 +94,26 @@ def update_user(id: int, user: UserCreate, db: Session = Depends(get_db)):
 def delete_user(id: int, db: Session = Depends(get_db)):
 
     deleted = user_services.delete_user(db, id)
-    if deleted:
+    try:
+        if deleted:
+            return api_response(
+                status_code=200,
+                message="User deleted successfully",
+                data=None,
+                success=True
+            )
+        else:
+            return api_response(
+                status_code=404,
+                message="User not found",
+                data=None,
+                success=False
+            )
+    except Exception as e:
+        print(f"Error occurred while fetching user: {e}")
         return api_response(
-            status_code=200,
-            message="User deleted successfully",
-            data=None,
-            success=True
-        )
-    else:
-        return api_response(
-            status_code=404,
-            message="User not found",
-            data=None,
-            success=False
+            status_code=500,
+            message="unexpected error happened",
+            data= None,
+            success= False
         )
