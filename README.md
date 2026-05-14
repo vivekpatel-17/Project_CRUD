@@ -18,7 +18,7 @@ DATABASE_URL=postgresql://postgres:password@localhost/app
 ```
 
 4. Run the API:
-
+ 
 ```bash
 uvicorn main:app --reload
 ```

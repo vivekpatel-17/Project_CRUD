@@ -4,8 +4,11 @@ from core.database import  engine
 from models.user_model import Base
 from routes.user_routes import router as user_router
 from routes.task_routes import router as task_router
-app = FastAPI()
+from models.user_task import UserTaskMapping
 
+from routes.user_task_routes import router as user_task_router
+app = FastAPI()
+app.include_router(user_task_router)
 Base.metadata.create_all(bind=engine)
 
 app.include_router(user_router)
