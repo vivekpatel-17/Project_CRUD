@@ -4,7 +4,12 @@ from core.database import get_db
 from services import tasks_services
 from schemas.schemas_taks import TaskCreate
 from utils.response import api_response
-from auth.dependencies import get_current_user
+from auth.dependencies import (
+    get_current_user , 
+    task_access_required
+)
+from models.tasks_model import Task
+
 router = APIRouter(tags=["Tasks"])
 
 @router.get("/tasks")
@@ -76,47 +81,74 @@ def create_task(task:TaskCreate, db: Session = Depends(get_db),current_user = De
 
 
 @router.put("/tasks/{id}")
-def update_task(id: int, task: TaskCreate, db: Session = Depends(get_db),current_user = Depends(get_current_user)):
-    user = tasks_services.update_task(db, id, task)
-    if user:
+def update_task(
+    task_id: int,
+    task: TaskCreate,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+    db_task = Depends(task_access_required)
+    ):
+
+    try:
+       
+        db_task.title = task.title
+
+        db_task.description = task.description
+
+        db_task.completed = task.completed
+
+        db.commit()
+
+        db.refresh(db_task)
+
         return api_response(
             status_code=200,
-            message="User updated successfully",
-            data=task,
+            message="Task updated successfully",
+            data=db_task,
             success=True
         )
-    else:
+
+    except Exception as e:
+
+        print(f"Error occurred while updating task: {e}")
+
         return api_response(
-            status_code=404,
-            message="User not found",
+            status_code=500,
+            message="Unexpected error happened",
             data=None,
             success=False
         )
 
-@router.delete("/task/{id}")    
-def delete_user(id: int, db: Session = Depends(get_db)):
 
-    deleted = tasks_services.delete_task(db, id)
+   
+@router.delete("/tasks/{task_id}")
+def delete_task(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+    db_task = Depends(task_access_required)
+):
+
     try:
-        if deleted:
-            return api_response(
-                status_code=200,
-                message="task deleted successfully",
-                data=None,
-                success=True
-            )
-        else:
-            return api_response(
-                status_code=404,
-                message="task not found",
-                data=None,
-                success=False
-            )
+
+        db.delete(db_task)
+
+        db.commit()
+
+        return api_response(
+            status_code=200,
+            message="Task deleted successfully",
+            data=None,
+            success=True
+        )
+
     except Exception as e:
-        print(f"Error occurred while fetching task: {e}")
+
+        print(f"Error occurred while deleting task: {e}")
+
         return api_response(
             status_code=500,
-            message="unexpected error happened",
-            data= None,
-            success= False
+            message="Unexpected error happened",
+            data=None,
+            success=False
         )
