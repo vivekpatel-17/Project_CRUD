@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from models.user_model import User
+from auth.hashing import hash_password
 
 def get_user_by_id(db: Session, user_id: int):
     try:
@@ -19,14 +20,18 @@ def create_user(db: Session, user):
         db_user = User(
             username=user.username,
             email=user.email,
-            hashed_password=user.password
+            hashed_password=hash_password(user.password)
         )
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
         return db_user
-    except Exception as e :
-        print(f"Error occurred while fetching user: {e}")
+    except Exception as e:
+
+        db.rollback()
+
+        print(f"Error occurred while creating user: {e}")
+
         return None
 
 

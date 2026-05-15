@@ -4,10 +4,13 @@ from core.database import get_db
 from services import tasks_services
 from schemas.schemas_taks import TaskCreate
 from utils.response import api_response
-router = APIRouter()
+from auth.dependencies import get_current_user
+router = APIRouter(tags=["Tasks"])
 
 @router.get("/tasks")
-def get_all_task(db: Session = Depends(get_db)):
+def get_all_task(
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)):
     tasks = tasks_services.get_all_task(db)  
     try:
         return api_response(
@@ -53,7 +56,7 @@ def get_task_by_id(id: int ,db: Session = Depends(get_db)):
         )
 
 @router.post("/tasks")
-def create_task(task:TaskCreate, db: Session = Depends(get_db)):
+def create_task(task:TaskCreate, db: Session = Depends(get_db),current_user = Depends(get_current_user)):
     try:
         task = tasks_services.create_task(db, task)
         return api_response(
@@ -73,7 +76,7 @@ def create_task(task:TaskCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/tasks/{id}")
-def update_task(id: int, task: TaskCreate, db: Session = Depends(get_db)):
+def update_task(id: int, task: TaskCreate, db: Session = Depends(get_db),current_user = Depends(get_current_user)):
     user = tasks_services.update_task(db, id, task)
     if user:
         return api_response(

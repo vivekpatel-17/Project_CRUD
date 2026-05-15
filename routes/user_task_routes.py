@@ -11,7 +11,7 @@ from services import user_task_services
 from utils.response import api_response
 
 
-router = APIRouter()
+router = APIRouter(tags=["Task Assigened"])
 
 
 @router.post("/assign-task")

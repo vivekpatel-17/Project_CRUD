@@ -4,7 +4,7 @@ from core.database import get_db
 from services import user_services
 from schemas.user_schemas import UserCreate
 from utils.response import api_response
-router = APIRouter()
+router = APIRouter(tags=["Users"])
 
 @router.get("/users")
 def get_all_users(db: Session = Depends(get_db)):
@@ -53,22 +53,43 @@ def get_user_by_id(id: int ,db: Session = Depends(get_db)):
         )
 
 @router.post("/user")
-def create_user(user:UserCreate, db: Session = Depends(get_db)):
+def create_user(
+    user: UserCreate,
+    db: Session = Depends(get_db)
+):
+
     try:
-        user = user_services.create_user(db, user)
+
+        created_user = user_services.create_user(
+            db,
+            user
+        )
+
+        if not created_user:
+
+            return api_response(
+                status_code=400,
+                message="User creation failed",
+                data=None,
+                success=False
+            )
+
         return api_response(
-            status_code=200,
+            status_code=201,
             message="User created successfully",
-            data=user,
+            data=created_user,
             success=True
         )
+
     except Exception as e:
-        print(f"Error occurred while fetching user: {e}")
+
+        print(f"Error occurred while creating user: {e}")
+
         return api_response(
             status_code=500,
-            message="unexpected error happened",
-            data= None,
-            success= False
+            message="Unexpected error happened",
+            data=None,
+            success=False
         )
 
 
